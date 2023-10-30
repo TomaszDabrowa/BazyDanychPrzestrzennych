@@ -49,6 +49,27 @@ WITH noweBudynkiCTE AS
 SELECT ST_DWithin(poi.geom, ST_Union((SELECT * FROM noweBudynkiCTE)),500) 
 FROM t2019_kar_poi_table poi
 
+--powinno działać
+WITH NoweBudynki AS (
+    SELECT ST_Collect(b2019.geom) AS geom
+    FROM t2019_kar_buildings AS b2019
+    LEFT JOIN t2018_kar_buildings AS b2018
+    ON b2019.geom = b2018.geom
+    WHERE b2018.gid IS NULL
+),
+NowePunkty AS (
+    SELECT p2019.geom, p2019.type
+    FROM T2019_KAR_POI_TABLE AS p2019
+    LEFT JOIN T2018_KAR_POI_TABLE AS p2018
+    ON p2019.geom = p2018.geom
+    WHERE p2018.gid IS NULL
+)
+
+SELECT np.type, COUNT(np.geom)
+FROM NoweBudynki AS nb, NowePunkty AS np
+WHERE ST_DWithin(nb.geom, np.geom, 500)
+GROUP BY np.type;
+
 --Zad.3.
 --Utwórz nową tabelę o nazwie ‘streets_reprojected’, która zawierać będzie dane z tabeli 
 --T2019_KAR_STREETS przetransformowane do układu współrzędnych DHDN.Berlin/Cassini.
@@ -76,7 +97,7 @@ USING ST_Transform(geom, 3068);
 CREATE TABLE input_points 
 (
     id int PRIMARY KEY,
-    geom geometry(Point, 4326)
+    geom geometry
 );
 
 INSERT INTO input_points VALUES (1,ST_GeomFromText('POINT(8.36093 49.03174)', 4326));
@@ -86,8 +107,10 @@ INSERT INTO input_points VALUES (2,ST_GeomFromText('POINT(8.39876 49.00644)', 43
 --Zaktualizuj dane w tabeli ‘input_points’ tak, aby punkty te były w układzie współrzędnych 
 --DHDN.Berlin/Cassini. Wyświetl współrzędne za pomocą funkcji ST_AsText().
 
-UPDATE input_points SET geom = ST_Transform(geom,'EPSG:3068');
+UPDATE input_points SET geom = ST_Transform(geom,3068);
 SELECT ST_AsText(geom) FROM input_points;
+
+drop table input_points
 
 --Zad.6.
 --Znajdź wszystkie skrzyżowania, które znajdują się w odległości 200 m od linii zbudowanej 
@@ -99,9 +122,11 @@ SELECT * FROM t2019_kar_street_node skrz
 WHERE ST_DWithin
 (
 	skrz.geom,
-	ST_Transform(ST_MakeLine((SELECT geom FROM input_points WHERE id = 1 ) , (SELECT geom FROM input_points WHERE id = 2 )),'EPSG:4326'),
+	ST_Transform(ST_MakeLine((SELECT geom FROM input_points WHERE id = 1 ) , (SELECT geom FROM input_points WHERE id = 2 )),4326),
 	200
-)=True;
+);
+--select ST_SRID(geom) from t2019_kar_street_node
+--SELECT ST_SRID( ST_Transform(ST_MakeLine((SELECT geom FROM input_points WHERE id = 1 ) , (SELECT geom FROM input_points WHERE id = 2 )),4326))
 
 --Zad.7.
 --Policz jak wiele sklepów sportowych (‘Sporting Goods Store’ - tabela POIs) znajduje się 
@@ -123,7 +148,9 @@ AND ST_DWithin
 --Znajdź punkty przecięcia torów kolejowych (RAILWAYS) z ciekami (WATER_LINES). Zapisz 
 --znalezioną geometrię do osobnej tabeli o nazwie ‘T2019_KAR_BRIDGES’.
 CREATE TABLE T2019_KAR_BRIDGES AS
-SELECT ST_Intersection(cieki.geom,tory.geom) 
+SELECT DISTINCT ST_Intersection(cieki.geom,tory.geom) 
 FROM t2019_kar_water_lines cieki, t2019_kar_railways tory;
 
 select * from T2019_KAR_BRIDGES
+drop table T2019_KAR_BRIDGES
+
