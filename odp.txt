@@ -1,0 +1,22 @@
+Zad. 3.
+Długość linii kolejowej w regionie Matanuska-Susitna wynosi 268,213 km
+
+Zad. 4.
+Średnia wysokość wojskowych lotnisk wynosi 454,636 m n.p.m. Takich lotnisk jest 11.
+Znaleziono tylko jedno lotnisko wojskowe położone powyżej 1400 m n.p.m.
+
+Zad. 5.
+W regionie Bristol Bay znajduje się 11 budynków.
+
+Zad. 6.
+Takich budynków dalej jest 11.
+
+Zad. 7.
+Jest 8 punktów przecięcia rzek z liniami kolejowymi
+
+Zad. 8.
+Są 662 węzły warstwy railroads.
+
+Zad. 10.
+Suma powierzchni bagien przed uproszczeniem to 24719,8 km2.
+Ilość wierzchołków przed uproszczeniem to 7469, po uproszczeniu to 1026.
